@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Skip the Ditch</title>
+  <meta name="description" content="Answer Aussie and Kiwi trivia to skim a rock across the Tasman Sea.">
+  <meta name="theme-color" content="#4fa8df">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Skip the Ditch">
+  <meta property="og:description" content="Answer Aussie and Kiwi trivia to skim a rock 2,150 km across the Tasman Sea.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234fa8df'/%3E%3Cpath d='M0 40q8-4 16 0t16 0 16 0 16 0v24H0z' fill='%232a85bb'/%3E%3Cellipse cx='32' cy='30' rx='18' ry='8' fill='%238a847b'/%3E%3Cellipse cx='27' cy='27' rx='7' ry='2.5' fill='%23c4bfb5'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene" aria-hidden="true"></canvas>
+
+    <header id="hud">
+      <div class="stat"><span class="label">Distance</span><span class="value" id="dist">0 km</span></div>
+      <div class="stat"><span class="label">Spin</span><span class="value pips" id="spin"></span></div>
+      <div class="stat"><span class="label">Streak</span><span class="value" id="streak">0</span></div>
+      <button id="mute" type="button" aria-label="Mute sound" aria-pressed="false">🔊</button>
+    </header>
+
+    <div id="progress" aria-hidden="true">
+      <div id="progress-fill"></div>
+      <div id="progress-rock"></div>
+      <span class="end left">Bondi</span>
+      <span class="end right">Auckland</span>
+    </div>
+
+    <section id="card" class="hidden" tabindex="-1" aria-labelledby="question">
+      <div class="card-top">
+        <span id="tag" class="tag"></span>
+        <span id="qnum"></span>
+      </div>
+      <div id="timer"><div id="timer-fill"></div></div>
+      <h2 id="question"></h2>
+      <div id="answers"></div>
+      <p id="fact"></p>
+    </section>
+
+    <section id="overlay"></section>
+    <div id="sr" class="sr-only" aria-live="polite"></div>
+  </div>
+  <noscript><p class="noscript">Skip the Ditch needs JavaScript to run. Turn it on and reload the page.</p></noscript>
+
+  <script src="questions.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
