@@ -75,6 +75,7 @@
     o.stop(t + dur + 0.02);
   }
   const sfx = {
+    whoosh: () => tone({ f0: 240, f1: 760, dur: 0.18, vol: 0.07 }),
     skip: () => tone({ f0: 1400, f1: 380, dur: 0.11, vol: 0.12 }),
     right: () => { tone({ f0: 660, dur: 0.12, type: "triangle", vol: 0.14 }); tone({ f0: 990, dur: 0.2, type: "triangle", vol: 0.14, delay: 0.1 }); },
     wrong: () => tone({ f0: 220, f1: 130, dur: 0.32, type: "square", vol: 0.05 }),
@@ -107,8 +108,31 @@
   let camKm = 0;
   const sx = (km) => W * ROCK_SCREEN_X + (km - camKm) * ppk();
 
+  // ---------- Character sprites ----------
+  // Both sheets are a row of 128×128 frames, character facing right, feet on the bottom row.
+  function loadSheet(src, frames) {
+    const sheet = { img: new Image(), frames, ready: false };
+    sheet.img.onload = () => { sheet.ready = true; };
+    sheet.img.src = src;
+    return sheet;
+  }
+  const sheets = { walk: loadSheet("Walking.png", 12), throw: loadSheet("Throwing.png", 4) };
+  const FRAME = 128;
+  const FOOT_X = 60;                 // source px: horizontal centre of the feet
+  const IDLE_FRAME = 3;              // walking frame used as the standing pose
+  const WALK_FPS = 14;
+  const WALK_SPEED = 46;             // units per second along the beach
+  const WALK_IN = 120;               // how far (units) the thrower walks in on first load
+  const THROW_TIMES = [0.13, 0.12, 0.16, 0.42]; // seconds on each throwing frame
+  const RELEASE_AT = THROW_TIMES[0] + THROW_TIMES[1]; // rock leaves the hand as frame 2 starts
+  const HAND = { x: 94, y: 83 };     // source px: hand position in throwing frame 2
+  const spriteScale = () => 0.8 * unit(); // ~70 px tall character → ~56 units
+
+  let thrower = { anim: "idle", t: 0, x: 0, released: false };
+  const setThrower = (anim, x = 0) => { thrower = { anim, t: 0, x, released: false }; };
+
   // ---------- Game state ----------
-  let state = "title"; // title | flying | waiting | question | feedback | sinking | winning | over | won
+  let state = "title"; // title | throwing | flying | waiting | question | feedback | sinking | winning | over | won
   let run = 0;         // increments each game so stale timeouts are ignored
   let rock = { km: 0, y: 0, rot: 0, tilt: 0, sink: 0 };
   let flight = null, segments = [], wobbleNext = false;
@@ -241,6 +265,8 @@
       </div>`;
     for (const b of overlay.querySelectorAll(".mode")) b.addEventListener("click", () => setMode(b.dataset.mode));
     $("go").addEventListener("click", startGame);
+    // First visit: the thrower strolls in along the beach. Coming back from a game, they're already there.
+    if (fromUser) setThrower("idle"); else setThrower("walk", -WALK_IN);
     setMode(mode);
     showMenu();
     if (fromUser) focusEl($("go"));
@@ -260,7 +286,38 @@
     app.classList.remove("menu");
     hide(card);
     updateHud();
+    camKm = 0;
+    flight = null; segments = [];
+    // The throw animation releases the rock part-way through (see updateThrower)
+    state = "throwing";
+    setThrower("throw");
+  }
+
+  // Where the thrower's feet are on screen
+  const throwerFeet = () => ({ x: sx(0) - 24 * unit() + thrower.x * unit(), y: waterY - 8 * unit() });
+
+  function releaseRock() {
+    const s = spriteScale(), feet = throwerFeet();
+    const handX = feet.x + (HAND.x - FOOT_X) * s;
+    const handY = feet.y - (FRAME - HAND.y) * s;
+    rock.km = (handX - sx(0)) / ppk();
+    rock.y = handY - (waterY - 5);
+    sfx.whoosh();
     queueSkips([24, 14]);
+  }
+
+  function updateThrower(dt) {
+    thrower.t += dt;
+    if (thrower.anim === "walk") {
+      thrower.x = Math.min(0, thrower.x + WALK_SPEED * dt);
+      if (thrower.x >= 0) setThrower("idle");
+    } else if (thrower.anim === "throw") {
+      if (!thrower.released && thrower.t >= RELEASE_AT) {
+        thrower.released = true;
+        if (state === "throwing") releaseRock();
+      }
+      if (thrower.t >= THROW_TIMES.reduce((a, b) => a + b)) setThrower("idle");
+    }
   }
 
   function endGame(won) {
@@ -516,9 +573,8 @@
       if (Math.random() < dt * 14) {
         bubbles.push({ km: rock.km, dx: (Math.random() - 0.5) * 14, y: rock.y, life: 1.2, r: 1.5 + Math.random() * 2.5 });
       }
-    } else if (state === "title") {
-      rock.y = -30 * unit();
     }
+    updateThrower(dt);
 
     camKm += (rock.km - camKm) * Math.min(1, dt * 6);
 
@@ -610,22 +666,7 @@
       ctx.closePath();
       ctx.fill();
 
-      // thrower
-      const fx = x0 - 24 * u, feet = wy - 8 * u;
-      ctx.strokeStyle = "#1d2b36";
-      ctx.lineWidth = 3 * u;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(fx - 6 * u, feet); ctx.lineTo(fx, feet - 14 * u); ctx.lineTo(fx + 6 * u, feet); // legs
-      ctx.moveTo(fx, feet - 14 * u); ctx.lineTo(fx, feet - 30 * u);                             // body
-      const holding = state === "title";
-      ctx.moveTo(fx, feet - 26 * u);
-      if (holding) ctx.lineTo(fx + 20 * u, feet - 24 * u);   // arm out holding rock
-      else ctx.lineTo(fx + 14 * u, feet - 40 * u);            // arm up celebrating
-      ctx.moveTo(fx, feet - 26 * u); ctx.lineTo(fx - 10 * u, feet - 18 * u);
-      ctx.stroke();
-      ctx.fillStyle = "#1d2b36";
-      ctx.beginPath(); ctx.arc(fx, feet - 36 * u, 5.5 * u, 0, Math.PI * 2); ctx.fill();
+      drawThrower();
     }
 
     // --- Finish: Auckland hills + Sky Tower ---
@@ -680,6 +721,36 @@
       ctx.closePath();
       ctx.fill();
     }
+  }
+
+  function drawThrower() {
+    let sheet = sheets.walk, frame = IDLE_FRAME;
+    if (thrower.anim === "walk") {
+      frame = Math.floor(thrower.t * WALK_FPS) % sheet.frames;
+    } else if (thrower.anim === "throw") {
+      sheet = sheets.throw;
+      let t = thrower.t;
+      frame = 0;
+      while (frame < THROW_TIMES.length - 1 && t >= THROW_TIMES[frame]) t -= THROW_TIMES[frame++];
+    }
+    const feet = throwerFeet();
+    if (!sheet.ready) {
+      // Simple stand-in until the sprite sheet has loaded (or if it fails to)
+      const u = unit();
+      ctx.fillStyle = "#c9d6f5";
+      ctx.fillRect(feet.x - 5 * u, feet.y - 40 * u, 10 * u, 40 * u);
+      ctx.beginPath(); ctx.arc(feet.x, feet.y - 44 * u, 5 * u, 0, Math.PI * 2); ctx.fill();
+      return;
+    }
+    const s = spriteScale();
+    // soft contact shadow on the sand
+    ctx.fillStyle = "rgba(90, 60, 20, 0.22)";
+    ctx.beginPath(); ctx.ellipse(feet.x, feet.y, 13 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill();
+    const smooth = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false; // crisp pixel art
+    ctx.drawImage(sheet.img, frame * FRAME, 0, FRAME, FRAME,
+      Math.round(feet.x - FOOT_X * s), Math.round(feet.y - FRAME * s), FRAME * s, FRAME * s);
+    ctx.imageSmoothingEnabled = smooth;
   }
 
   function drawBuoys(wy) {
@@ -757,11 +828,12 @@
   }
 
   function drawRock(wy) {
+    if (state === "title" || state === "throwing") return; // still in the thrower's hand
     const x = sx(rock.km);
     const y = wy - 5 + rock.y;
     const R = 11 * unit();
 
-    if (rock.y < -3 && state !== "title") {
+    if (rock.y < -3) {
       const s = Math.max(0.25, 1 - -rock.y / 220);
       ctx.fillStyle = `rgba(10,40,70,${0.28 * s})`;
       ctx.beginPath(); ctx.ellipse(x, wy + 2, R * 1.1 * s, R * 0.25 * s, 0, 0, Math.PI * 2); ctx.fill();
