@@ -395,6 +395,28 @@ h1, h2, .value, .primary, .secondary { font-family: "Fredoka", "Nunito", system-
 .mode.nz { --mode-color: var(--nz-bg); }
 .mode b { font: 600 15px "Fredoka", sans-serif; line-height: 1.2; }
 .nowrap { white-space: nowrap; }
+
+/* ---------- Contribute / report links ---------- */
+.contribute {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.contribute a, .report {
+  font-weight: 800;
+  color: var(--accent-dark);
+  text-underline-offset: 2px;
+}
+.contribute a:hover, .report:hover { color: var(--ink); }
+.contribute span { margin: 0 6px; }
+a:focus-visible { outline: 3px solid #1f7a8c; outline-offset: 2px; border-radius: 3px; }
+
+.card-meta { display: flex; align-items: center; gap: 10px; }
+.report { font-size: 12px; }
+.report[hidden] { display: none; }
 .mode span { font-size: 11px; line-height: 1.25; color: var(--muted); }
 .mode:hover { border-color: var(--mode-color); }
 .mode:active { transform: scale(0.97); }

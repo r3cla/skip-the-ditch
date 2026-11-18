@@ -20,6 +20,7 @@
   const distEl = $("dist"), spinEl = $("spin"), streakEl = $("streak");
   const progFill = $("progress-fill"), progRock = $("progress-rock");
   const muteBtn = $("mute");
+  const reportEl = $("report");
 
   const TAGS = { au: "Australia", nz: "Aotearoa NZ", tt: "Trans-Tasman" };
   const MODES = {
@@ -28,6 +29,18 @@
     both: { label: "Both",        sub: 'Aussie, Kiwi &amp; <span class="nowrap">trans-Tasman</span>', cats: ["au", "nz", "tt"], share: "trans-Tasman" },
   };
   const MODE_KEYS = Object.keys(MODES);
+
+  // Submissions go to GitHub issue forms (.github/ISSUE_TEMPLATE). Point this elsewhere
+  // (e.g. a Google Form) if players shouldn't need a GitHub account.
+  const ISSUES_URL = "https://github.com/r3cla/skip-the-ditch/issues/new";
+  const issueLink = (template, fields = {}) =>
+    `${ISSUES_URL}?${new URLSearchParams({ template, ...fields })}`;
+  const contributeLinks = `
+    <p class="contribute">
+      <a href="${issueLink("suggest-question.yml")}" target="_blank" rel="noopener">Suggest a question</a>
+      <span aria-hidden="true">·</span>
+      <a href="${issueLink("feedback.yml")}" target="_blank" rel="noopener">Send feedback</a>
+    </p>`;
 
   // ---------- Storage (safe) ----------
   const store = {
@@ -223,6 +236,7 @@
           <button class="primary" id="go" type="button">Throw the rock</button>
           <p class="best" id="best-line" hidden></p>
           <p class="hint">Tip: 1–3 picks questions, Enter throws, 1–4 answers</p>
+          ${contributeLinks}
         </div>
       </div>`;
     for (const b of overlay.querySelectorAll(".mode")) b.addEventListener("click", () => setMode(b.dataset.mode));
@@ -281,6 +295,7 @@
             <button class="secondary" id="share" type="button">Share</button>
           </div>
           <p class="mode-note">Questions: <b>${MODES[mode].label}</b> · <button class="link" id="change" type="button">Change</button></p>
+          ${contributeLinks}
         </div>
       </div>`;
     $("again").addEventListener("click", startGame);
@@ -316,6 +331,7 @@
     questionEl.textContent = current.q;
     factEl.textContent = "";
     factEl.classList.remove("show");
+    reportEl.hidden = true; // only offered once the answer is revealed
     answersEl.innerHTML = "";
     const opts = shuffle(current.a.map((text, i) => ({ text, correct: i === 0 })));
     opts.forEach((o, i) => {
@@ -352,6 +368,12 @@
     if (btn && !ok) btn.classList.add("wrong");
     if (current.f) { factEl.textContent = current.f; factEl.classList.add("show"); }
     const correctText = current.a[0];
+    reportEl.href = issueLink("report-question.yml", {
+      title: `[Report] ${current.q}`,
+      question: current.q,
+      "listed-answer": correctText,
+    });
+    reportEl.hidden = false;
 
     const r = run;
     if (ok) {

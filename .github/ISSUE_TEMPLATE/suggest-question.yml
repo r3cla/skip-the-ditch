@@ -1,0 +1,58 @@
+name: Suggest a question
+description: Send in your own Aussie, Kiwi or trans-Tasman trivia question.
+title: "[Question] "
+labels: ["question-suggestion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping fill the Ditch! Good questions have **one clearly correct answer**, three believable wrong ones, and a fact that can be checked.
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Australia
+        - Aotearoa New Zealand
+        - Trans-Tasman (both countries)
+    validations:
+      required: true
+  - type: input
+    id: question
+    attributes:
+      label: Question
+      placeholder: What is the capital city of Australia?
+    validations:
+      required: true
+  - type: input
+    id: correct
+    attributes:
+      label: Correct answer
+      placeholder: Canberra
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: Three wrong answers
+      description: One per line. They should be believable but definitely wrong.
+      placeholder: |
+        Sydney
+        Melbourne
+        Brisbane
+    validations:
+      required: true
+  - type: input
+    id: fact
+    attributes:
+      label: Fun fact (optional)
+      description: A short fact shown after the question is answered.
+      placeholder: Canberra was purpose-built as a compromise between Sydney and Melbourne.
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: A link that backs up the answer, so it can be fact-checked.
+      placeholder: https://
+    validations:
+      required: true

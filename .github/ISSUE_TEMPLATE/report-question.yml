@@ -1,0 +1,29 @@
+name: Report a question
+description: Flag a question that's wrong, out of date or confusing.
+title: "[Report] "
+labels: ["question-report"]
+body:
+  - type: input
+    id: question
+    attributes:
+      label: Question
+      description: Filled in automatically when you report from the game.
+    validations:
+      required: true
+  - type: input
+    id: listed-answer
+    attributes:
+      label: Answer the game gave
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong?
+      placeholder: e.g. The answer is out of date, two options could both be right, there's a typo…
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source (optional)
+      description: A link that shows the right answer.
+      placeholder: https://

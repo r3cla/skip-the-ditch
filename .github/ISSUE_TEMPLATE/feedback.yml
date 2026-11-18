@@ -1,0 +1,27 @@
+name: Feedback
+description: Ideas, bugs, or anything else about the game.
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of feedback?
+      options:
+        - Idea or suggestion
+        - Something isn't working
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Tell us more
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser (optional)
+      description: Handy if something isn't working.
+      placeholder: e.g. iPhone 13, Safari
