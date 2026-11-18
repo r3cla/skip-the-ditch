@@ -412,6 +412,9 @@ h1, h2, .value, .primary, .secondary { font-family: "Fredoka", "Nunito", system-
 }
 .contribute a:hover, .report:hover { color: var(--ink); }
 .contribute span { margin: 0 6px; }
+.credit { margin: 8px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
+.credit a { color: inherit; font-weight: 800; text-underline-offset: 2px; }
+.credit a:hover { color: var(--ink); }
 a:focus-visible { outline: 3px solid #1f7a8c; outline-offset: 2px; border-radius: 3px; }
 
 .card-meta { display: flex; align-items: center; gap: 10px; }

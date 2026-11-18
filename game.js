@@ -261,6 +261,7 @@
           <p class="best" id="best-line" hidden></p>
           <p class="hint">Tip: 1–3 picks questions, Enter throws, 1–4 answers</p>
           ${contributeLinks}
+          <p class="credit">Character art by <a href="https://craftpix.net" target="_blank" rel="noopener">CraftPix.net</a></p>
         </div>
       </div>`;
     for (const b of overlay.querySelectorAll(".mode")) b.addEventListener("click", () => setMode(b.dataset.mode));
